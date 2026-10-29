@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Sound Garden — 3D Bioluminescent Sound Design Studio</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- 3D WebGL Conservatory Viewport -->
+  <div id="viewport-3d"></div>
+
+  <!-- Projected 3D Spatial Node Labels -->
+  <div id="labels-3d"></div>
+
+  <!-- Welcome Modal (Initializes Web Audio Context on user gesture) -->
+  <div id="welcome-overlay" class="welcome-overlay">
+    <div class="welcome-card">
+      <span class="welcome-eyebrow">3D Virtual Instrument &amp; Plugin Ecosystem</span>
+      <h1 class="welcome-title">THE SOUND GARDEN</h1>
+      <p class="welcome-desc">
+        Step inside a nocturnal bioluminescent glass conservatory where <strong>Virtual Instruments</strong> bloom as sonic flora and <strong>DSP Effects Plugins</strong> shape the atmosphere through glowing 3D mycelial patch cables.
+      </p>
+      <div class="welcome-features">
+        <div class="welcome-feat">
+          <strong>🌷 4 Playable Sonic Flora Synths</strong>
+          Sub-Flora Bass, Crystal Pad, Granular Spore Cloud &amp; Percussion Blooms
+        </div>
+        <div class="welcome-feat">
+          <strong>🌊 4 Modular 3D DSP Plugins</strong>
+          Lush Reverb, Echo Vine Delay, Filter Prism &amp; Distortion Thorn
+        </div>
+        <div class="welcome-feat">
+          <strong>🔌 3D Mycelial Patching &amp; Panning</strong>
+          Drag flora across the conservatory floor for 3D spatial panning &amp; wire live signal cables
+        </div>
+        <div class="welcome-feat">
+          <strong>🎹 Sequencer, Generative &amp; MIDI</strong>
+          16-step botanical sequencer, autonomous Generative Bloom, QWERTY &amp; MIDI keyboard
+        </div>
+      </div>
+      <button id="btn-enter-garden" class="btn-enter">🌱 ENTER THE SOUND GARDEN</button>
+    </div>
+  </div>
+
+  <!-- Top Studio Transport & Conservatory Controls -->
+  <header class="top-studio-bar">
+    <div class="brand-block">
+      <div class="brand-orb">🌿</div>
+      <div>
+        <div class="brand-title">THE SOUND GARDEN</div>
+        <div class="brand-sub">3D Botanical Sound Design Studio</div>
+      </div>
+    </div>
+
+    <div class="transport-controls">
+      <button id="btn-play" class="studio-btn primary-play">▶ BLOOM PLAY</button>
+      <button id="btn-generative" class="studio-btn active" title="Organically evolves melodies and ambient spore blooms">✨ GENERATIVE BLOOM</button>
+      <button id="btn-patch-mode" class="studio-btn" title="Click two nodes in 3D space to wire or unwire a glowing Mycelial Patch Cable">🔌 3D PATCH CABLES</button>
+      <button id="btn-record" class="studio-btn" title="Record live studio output to an audio file">● REC AUDIO</button>
+
+      <div class="compact-slider-group">
+        <input id="bpm-slider" type="range" min="50" max="170" value="96" />
+        <span id="bpm-value">96 BPM</span>
+      </div>
+    </div>
+
+    <div class="garden-selectors">
+      <select id="preset-garden-select" class="studio-select" title="Load a complete 3D Preset Garden"></select>
+      <select id="root-select" class="studio-select" title="Root Musical Key"></select>
+      <select id="scale-select" class="studio-select" title="Botanical Musical Scale"></select>
+    </div>
+
+    <div class="camera-controls">
+      <button class="studio-btn" data-cam-preset="overview" title="Overview Camera">🏛️ Dome</button>
+      <button class="studio-btn" data-cam-preset="canopy" title="Top-Down Canopy Signal View">🛸 Canopy</button>
+      <button class="studio-btn" data-cam-preset="ground" title="Ground Level Walk">🌱 Ground</button>
+      <div class="compact-slider-group" title="Master Studio Output Volume">
+        <span>🔊</span>
+        <input id="master-vol-slider" type="range" min="0" max="1.2" step="0.01" value="0.85" />
+      </div>
+      <button id="btn-toggle-hud" class="studio-btn">👁️ Zen 3D View</button>
+    </div>
+  </header>
+
+  <!-- Floating Status / Interactive Hint Banner -->
+  <div id="status-banner" class="status-banner">
+    Click any 3D plant or plugin to inspect its rack • Drag on floor to pan in 3D stereo space • Orbit with Left-Drag, Zoom with Scroll
+  </div>
+
+  <!-- Left Dock: Spawner Catalog & Active 3D Nodes -->
+  <aside class="left-dock">
+    <div>
+      <div class="dock-section-title">
+        <span>🌷 Plant Virtual Instruments</span>
+        <span>4 FLORA</span>
+      </div>
+      <div id="spawner-instruments" class="spawner-list"></div>
+    </div>
+
+    <div>
+      <div class="dock-section-title">
+        <span>🌊 Spawn 3D FX Plugins</span>
+        <span>4 DSP FX</span>
+      </div>
+      <div id="spawner-plugins" class="spawner-list"></div>
+    </div>
+
+    <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+      <div class="dock-section-title">
+        <span>🌳 Active Garden Nodes</span>
+        <span>SIGNAL GRAPH</span>
+      </div>
+      <div id="active-nodes-list" class="active-nodes-list"></div>
+    </div>
+  </aside>
+
+  <!-- Right Floating Rack: Selected Virtual Instrument / FX Plugin Custom GUI -->
+  <aside id="rack-panel" class="right-rack-panel">
+    <div class="rack-header">
+      <div>
+        <div id="rack-header-title">🌷 Sub-Flora Bass</div>
+        <div id="rack-header-subtitle">Bioluminescent Root &amp; Bulb Sub-Synthesizer</div>
+      </div>
+      <span id="rack-badge" class="rack-badge">SYNTH FLORA</span>
+    </div>
+
+    <div class="rack-toolbar">
+      <select id="rack-preset-select" class="studio-select" style="flex:1;"></select>
+      <button id="btn-rack-trigger" class="studio-btn" title="Trigger a preview note on this instrument">🎵 Bloom</button>
+      <button id="btn-rack-mute" class="studio-btn">🔊 Active</button>
+      <button id="btn-rack-focus" class="studio-btn" title="Focus 3D Camera on this node">🎯</button>
+      <button id="btn-rack-delete" class="studio-btn" title="Remove node from garden">🗑️</button>
+    </div>
+
+    <div id="rack-pos-readout" class="rack-spatial-bar">
+      3D Pos: (0.0, 0.0) | Stereo Pan: CENTER
+    </div>
+
+    <div>
+      <div class="dock-section-title">
+        <span>🎛️ Synthesis / DSP Parameters</span>
+        <span style="font-size:9px; color:#94a3b8;">DRAG KNOBS • DBL-CLICK RESET</span>
+      </div>
+      <div id="rack-knobs-grid" class="rack-knobs-grid"></div>
+    </div>
+
+    <div>
+      <div class="dock-section-title">
+        <span>🔌 Mycelial Patch Cable Routing</span>
+        <span style="font-size:9px; color:#94a3b8;">CLICK TO WIRE / UNWIRE</span>
+      </div>
+      <div id="rack-patch-list" class="rack-patch-list"></div>
+    </div>
+  </aside>
+
+  <!-- Bottom Studio Dock: 16-Step Botanical Sequencer + Playable Keyboard + Master Analyzer -->
+  <footer class="bottom-studio-dock">
+    <!-- Column 1: 16-Step Sequencer -->
+    <div class="dock-col">
+      <div class="dock-col-header">
+        <div class="dock-section-title" style="margin:0;">
+          <span>🎼 16-Step Botanical Sequencer</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <select id="seq-inst-select" class="studio-select" title="Select Instrument Pattern Lane"></select>
+          <button id="btn-seq-random" class="studio-btn" title="Randomize Pattern">🎲 Mutate</button>
+          <button id="btn-seq-clear" class="studio-btn" title="Clear Pattern">Clear</button>
+        </div>
+      </div>
+      <div id="seq-steps-grid" class="seq-steps-grid"></div>
+    </div>
+
+    <!-- Column 2: Playable 2-Octave Ribbon Keyboard -->
+    <div class="dock-col">
+      <div class="dock-col-header">
+        <div class="dock-section-title" style="margin:0;">
+          <span>🎹 Live Botanical Keyboard (Mouse / QWERTY A-P / MIDI)</span>
+        </div>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <button id="btn-oct-down" class="studio-btn" style="padding:3px 8px;">◀ Oct</button>
+          <span id="kb-octave-label" style="font-family:var(--font-mono); font-size:11px; color:var(--accent-cyan); padding:0 4px;">C3</span>
+          <button id="btn-oct-up" class="studio-btn" style="padding:3px 8px;">Oct ▶</button>
+        </div>
+      </div>
+      <div id="piano-keys" class="piano-keys"></div>
+    </div>
+
+    <!-- Column 3: Real-Time Master FFT Spectrum & Oscilloscope -->
+    <div class="dock-col">
+      <div class="dock-col-header">
+        <div class="dock-section-title" style="margin:0;">
+          <span>📈 Heart Tree Spectrum &amp; Scope</span>
+        </div>
+      </div>
+      <canvas id="master-scope-canvas" width="240" height="120"></canvas>
+    </div>
+  </footer>
+
+  <!-- Scripts (Works directly on file:// and http:// with zero build step) -->
+  <script src="lib/three.min.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/audio-engine.js"></script>
+  <script src="js/world3d.js"></script>
+  <script src="js/sequencer.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
